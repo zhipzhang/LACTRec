@@ -86,6 +86,7 @@ class LACT_Reconstruction
         bool SimpleSteroRec(LACTEvent* event, LACTRecEvent* rec);
         void SetMcData(LACTEvent* event, LACTRecEvent* rec);
         bool DirectionRec(LACTEvent* event, LACTRecEvent* rec);
+        void FillTelRp(LACTRecEvent* rec);
         void EventRec(LACTEvent* event, LACTRecEvent* rec);
         void FillLookupTable(LACTRecEvent* );
         void InitLookupTableData();

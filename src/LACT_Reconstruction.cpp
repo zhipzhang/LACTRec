@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <ostream>
 
 //default setting
 LACT_Reconstruction::LACT_Reconstruction()
@@ -387,7 +388,7 @@ bool LACT_Reconstruction::SimpleSteroRec(LACTEvent* event, LACTRecEvent *rec)
         {
             for( int j = 0; j < i; j++)
             {
-                if(rec->GetStatus(i) >= 1)
+                if(rec->GetStatus(j) >= 1 )
                 {
                     if( Utilities::intersect_lines(xt[i], yt[i], rec->GetTelAlpha(i), xt[j], yt[j], rec->GetTelAlpha(j), &xs, &ys, &angs) != 1)
                     {
@@ -465,7 +466,8 @@ void LACT_Reconstruction::EventRec(LACTEvent *event, LACTRecEvent *rec)
         if(DirectionRec(event, rec))
         {
             double direction_error = Utilities::angle_between(event->GetAzimuth() * TMath::DegToRad(), event->GetAltitude() * TMath::DegToRad(), rec->GetRecAz() * TMath::DegToRad(), rec->GetRecAlt() * TMath::DegToRad());
-            rec->SetDirectionError(direction_error);
+            rec->SetDirectionError(direction_error * TMath::RadToDeg());
+            FillTelRp(rec);
         }
         else 
         {
@@ -475,6 +477,19 @@ void LACT_Reconstruction::EventRec(LACTEvent *event, LACTRecEvent *rec)
 
 }
 
+void LACT_Reconstruction::FillTelRp(LACTRecEvent *rec)
+{
+    for( int i = 0; i < rec->GetNtel(); i++)
+    {
+        int tel_id = rec->GetTelid(i);
+        double rp = Utilities::line_point_distance(rec->GetMCCoreX(), rec->GetMCCoreY(), 0, cos(rec->GetMCaz() * TMath::DegToRad()) * cos(rec->GetMCal() * TMath::DegToRad()), 
+                                -sin(rec->GetMCaz() * TMath::DegToRad()) * cos(rec->GetMCal() * TMath::DegToRad()), sin(rec->GetMCal() * TMath::DegToRad()), tel_config[tel_id]->GetTelpos(0),tel_config[tel_id]->GetTelpos(1), tel_config[tel_id]->GetTelpos(2));
+        rec->SetTelRp(rp);
+        double rec_rp = Utilities::line_point_distance(rec->GetRecCoreX(), rec->GetRecCoreY(), 0, cos(rec->GetRecAz() * TMath::DegToRad()) * sin(rec->GetRecAlt() * TMath::DegToRad()),
+                         -sin(rec->GetRecAz() * TMath::DegToRad()) * cos(rec->GetRecAlt() * TMath::DegToRad()), sin(rec->GetRecAlt() * TMath::DegToRad()), tel_config[tel_id]->GetTelpos(0), tel_config[tel_id]->GetTelpos(1), tel_config[tel_id]->GetTelpos(2));
+        rec->SetTelRecRp(rec_rp);
+    }
+}
 void LACT_Reconstruction::ComputePixNeighbor()
 {
     for( auto itel_config = tel_config.begin(); itel_config != tel_config.end(); ++itel_config)
@@ -534,10 +549,12 @@ void LACT_Reconstruction::Draw_Events(LACTEvent* event, int ievent)
     {
 
         int tel_id = rec->GetTelid(i);
-        if( rec->good_image[i] >= 1)
+        if(rec->good_image[i] >= 1)
         {
-            display(rec, event->GetTelData(i), ievent, i);
+            int index = event->GetTelIndex(tel_id);
+            display(rec, event->GetTelData(index), ievent, i);
         }
+
     }
 }
 
@@ -599,6 +616,7 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
     pavet->SetFillStyle(0);
     pavet->Draw("same");
     std::cout << "Begin Save Event" <<ievent << " Tel " << tel_id << std::endl; 
+    std::cout << "Camera Size is " << rec->GetTelSize(i) << std::endl;
     camera_image->SaveAs(Form("Event%d_camera%d.png", ievent, tel_id));
     delete camera_image;
     delete camera;

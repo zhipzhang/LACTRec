@@ -49,6 +49,7 @@ bool LACTEvent::GetData()
             int itel = Trig_list[i] - 1;
             tel_data.push_back( new LACT_TelData(npix[itel]));
             tel_data[i]->SetTelid(itel);
+            map_telid_index[itel] = i;
             for( int j = 0; j < npix[itel]; j++)
             {
                 tel_data[i]->GetPe()[j] = rd2->PoissonD(8.91) - 8.91 + pe_list[i][j];
@@ -68,6 +69,7 @@ void LACTEvent::Reset()
         delete data;
     }
     tel_data.clear();
+    map_telid_index.clear();
 }
 
 LACTEvent::LACTEvent()

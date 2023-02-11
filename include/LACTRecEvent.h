@@ -45,9 +45,10 @@ class LACTRecEvent : public TObject
         std::vector< double> true_x;
         std::vector< double> true_y;
         std::vector< double> alpha;
-        std::vector< double> tel_az;              //! Considered Pointing Error
-        std::vector< double> tel_al;              //! Considered Pointing Error
+        std::vector< double> tel_az;              // Considered Pointing Error
+        std::vector< double> tel_al;              // Considered Pointing Error
         std::vector< double> rp; 
+        std::vector< double> rec_rp;
 
         std::vector< int>  good_image;
         int ngood_images;
@@ -66,6 +67,38 @@ class LACTRecEvent : public TObject
         double GetRecAlt()
         {
             return rec_altitude;
+        }
+        double GetMCCoreX()
+        {
+            return MCxcore;
+        }
+        double GetMCCoreY()
+        {
+            return MCycore;
+        }
+        double GetRecCoreX()
+        {
+            return rec_x;
+        }
+        double GetRecCoreY()
+        {
+            return rec_y;
+        }
+        double GetMCal()
+        {
+            return MCal;
+        }
+        double GetMCaz()
+        {
+            return MCaz;
+        }
+        void SetTelRp(double r)
+        {
+            rp.push_back(r);
+        }
+        void SetTelRecRp(double rec_r)
+        {
+            rec_rp.push_back(rec_r);
         }
         void SetDirectionError( double error)
         {
@@ -220,7 +253,6 @@ class LACTRecEvent : public TObject
             return true_y[i];
         }
         void GetMCData(LACTEvent*) ;
-        void Display(LACTEvent*);
 
         ClassDef(LACTRecEvent, 1)
 

@@ -40,6 +40,7 @@ class LACTEvent
 
         unsigned int Trig_list[LACT_MAXTEL];
         unsigned int ntrig;
+        std::map<int, int> map_telid_index;
         unsigned short int  pe_list[LACT_MAXTEL][LACT_MAXPIXELS];
 
         
@@ -117,6 +118,10 @@ class LACTEvent
         int IsTrigger()
         {
             return flag;
+        }
+        int GetTelIndex(int tel_id)
+        {
+            return map_telid_index[tel_id];
         }
 
 

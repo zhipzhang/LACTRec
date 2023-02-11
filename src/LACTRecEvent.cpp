@@ -24,7 +24,7 @@ LACTRecEvent::LACTRecEvent()
     rec_energy = MCenergy = MCxcore = MCycore = rec_x = rec_y = -9999;
     MCal = MCaz = weight = rec_altitude = rec_azimuth = rec_camerax = rec_cameray = direction_error = Point_Al = Point_Al = -999;
     ngood_images = npass_size = 0;
-    mrsl = mrsw;
+    mrsl = mrsw = - 9999;
 }
 
 void LACTRecEvent::Reset()
@@ -35,6 +35,7 @@ void LACTRecEvent::Reset()
     ngood_images = npass_size = 0;
     ntel = 0;
     mrsl = mrsw = -9999;
+    tel_id.clear();
     length.clear();
     width.clear();
     size.clear();
@@ -47,10 +48,12 @@ void LACTRecEvent::Reset()
     tel_az.clear();
     tel_al.clear();
     rp.clear();
+    rec_rp.clear();
 }
 
 LACTRecEvent::~LACTRecEvent()
 {
+    tel_id.clear();
     length.clear();
     width.clear();
     size.clear();
@@ -63,4 +66,5 @@ LACTRecEvent::~LACTRecEvent()
     tel_az.clear();
     tel_al.clear();
     rp.clear();
+    rec_rp.clear();
 }

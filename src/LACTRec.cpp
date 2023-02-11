@@ -83,7 +83,7 @@ int main(int argc, char** argv)
         out_root->cd();
         lact_rectree->Write();
         out_root->Write();
-
+        out_root->Close();
         
 }
 
