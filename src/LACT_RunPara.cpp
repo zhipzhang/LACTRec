@@ -1,4 +1,6 @@
 #include "LACT_RunPara.h"
+#include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include "straux.h"
@@ -81,6 +83,20 @@ void LACT_RUNPARA::ProcessCommandLine(int argc, char **argv)
                         continue;
 
                 }
+                if(strcmp(argv[1], "--num-weight") == 0)
+                {
+                        size_t n = sscanf(argv[2], "%lf,%lf,%lf,%lf", &num_weight[0], &num_weight[1], &num_weight[2], &num_weight[3]);
+                        if( n < 4)
+                        {
+                                fprintf(stderr, "Syntax Error! you have to specify all four parameters for numweight");
+                                exit(EXIT_FAILURE);
+                        }
+                        ResetWeight = true;
+                        argc -= 2;
+                        argv += 2;
+                        continue;
+
+                }
                 else 
                 {
                         break;
@@ -135,7 +151,7 @@ bool LACT_RUNPARA::ProcessCommandLine(int argc, char** argv, bool lookup_flag)
 
 LACT_RUNPARA::LACT_RUNPARA()
 {
-        havelookup = writelookup = DrawMode = SelectTel = false;
+        havelookup = writelookup = DrawMode = SelectTel= ResetWeight = false;
         lookup_file = "";
         out_file = "dst.root";
 

@@ -11,11 +11,16 @@ void LACTRecEvent::GetMCData(LACTEvent *event)
     MCal     = event->GetMCal();
     MCaz     = event->GetMCaz();
     particle_id = event->GetParticleid();
+    if(event->GetWeight() < 1.e-7)
+    {
+        event->SetWeight(pow(event->GetMCenergy(),-1.7));
+    }
     weight   = event->GetWeight();
     Point_Al  = event->GetPointAl();
     Point_Az  = event->GetPointAz();
+    MChmax    = event->GetHmax();
+    MCxmax   =  event->GetXmax();
     
-
 }
 
 LACTRecEvent::LACTRecEvent()
@@ -35,6 +40,7 @@ void LACTRecEvent::Reset()
     ngood_images = npass_size = 0;
     ntel = 0;
     mrsl = mrsw = -9999;
+    MChmax = MCxmax = -999;
     tel_id.clear();
     length.clear();
     width.clear();

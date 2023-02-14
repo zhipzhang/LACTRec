@@ -70,6 +70,14 @@ class LACTEvent
         {
             return tel_data.size();
         }
+        void ReWeight(float i)
+        {
+            weight = weight * i;
+        }
+        void SetWeight(float w)
+        {
+            weight = w;
+        }
         std::vector<LACT_TelData*>& GetTelData( )
         {
             return tel_data;
@@ -122,6 +130,14 @@ class LACTEvent
         int GetTelIndex(int tel_id)
         {
             return map_telid_index[tel_id];
+        }
+        float GetXmax()
+        {
+            return xmax;
+        }
+        float GetHmax()
+        {
+            return hmax;
         }
 
 

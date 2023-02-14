@@ -20,6 +20,8 @@ class LACTRecEvent : public TObject
         double MCenergy;
         double MCxcore;
         double MCycore;
+        double MCxmax;
+        double MChmax;
         double rec_x;
         double rec_y;
 
@@ -45,8 +47,8 @@ class LACTRecEvent : public TObject
         std::vector< double> true_x;
         std::vector< double> true_y;
         std::vector< double> alpha;
-        std::vector< double> tel_az;              // Considered Pointing Error
-        std::vector< double> tel_al;              // Considered Pointing Error
+        std::vector< double> tel_az;              //!Considered Pointing Error
+        std::vector< double> tel_al;              //!Considered Pointing Error
         std::vector< double> rp; 
         std::vector< double> rec_rp;
 
@@ -141,6 +143,10 @@ class LACTRecEvent : public TObject
             ntel++;
             good_image.push_back(0);
         }
+        double GetDirectionError()
+        {
+            return direction_error;
+        }
         int GetNtel()
         {
             return ntel;
@@ -148,6 +154,11 @@ class LACTRecEvent : public TObject
         int GetTelid(int i)
         {
             return tel_id[i];
+        }
+        void SetShape(double l, double w)
+        {
+            mrsl = l;
+            mrsw = w;
         }
         void ConvertRad(int i, double focal)
         {

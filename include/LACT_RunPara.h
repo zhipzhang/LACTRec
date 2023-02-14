@@ -16,6 +16,8 @@ class LACT_RUNPARA
 
         int special_entries;
         bool SelectTel;
+        bool ResetWeight;
+        double num_weight[4];
         std::vector<int> Only_Telescope;
         std::vector<int> Draw_Events;
         std::vector<std::string> input_file;

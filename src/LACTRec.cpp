@@ -72,6 +72,11 @@ int main(int argc, char** argv)
                         {
                                 Lact_Reconstruction->EventRec(lactevent, lactrec);
                         }
+                        else 
+                        {
+                                Lact_Reconstruction->Weight(lactevent);
+                                lactrec->GetMCData(lactevent);
+                        }
                         lact_rectree->Fill();
                         lactevent->Reset();
                         lactrec->Reset();

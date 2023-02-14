@@ -5,6 +5,7 @@
 #include "LACT_Telconfig.h"
 #include "Limits_defined.h"
 #include "LACT_Utilities.h"
+#include "LACTStatistics.h"
 #include "LACT_TelData.h"
 #include "RtypesCore.h"
 #include "TCanvas.h"
@@ -37,6 +38,12 @@ LACT_Reconstruction::LACT_Reconstruction()
     DrawMode = false;
     lookup_file = "";
 
+    ReWeight = false;
+    for(int i = 0; i < 4; i++)
+    {
+        num_weight[i] = 1;
+    }
+
 }
 
 void LACT_Reconstruction::GetCommandConfig(LACT_RUNPARA * LACT_Runpara)
@@ -58,6 +65,14 @@ void LACT_Reconstruction::GetCommandConfig(LACT_RUNPARA * LACT_Runpara)
         {
             SetDrawMode();
             DrawEvents = LACT_Runpara->Draw_Events;
+        }
+        if( LACT_Runpara->ResetWeight)
+        {
+            ReWeight = true;
+            for( int i = 0; i < 4; i++)
+            {
+                num_weight[i] = LACT_Runpara->num_weight[i];
+            }
         }
 }
 void LACT_Reconstruction::GetTelConfig(TTree *config_tree)
@@ -415,6 +430,11 @@ bool LACT_Reconstruction::SimpleSteroRec(LACTEvent* event, LACTRecEvent *rec)
     }
     if( sum_w == 0)
     {
+        delete [] x_ref;
+        delete [] y_ref;
+        delete [] alpha_ref;
+        delete [] xt;
+        delete [] yt;
         return false;
     }
     xs = sum_xs / sum_w;
@@ -453,6 +473,8 @@ void LACT_Reconstruction::SetEventPix(LACTEvent * event)
 
 void LACT_Reconstruction::EventRec(LACTEvent *event, LACTRecEvent *rec)
 {
+    if(ReWeight)
+        Weight(event);
     SetMcData(event, rec);
     for( auto itel_data = event->GetTelData().begin(); itel_data != event->GetTelData().end(); ++itel_data)
     {
@@ -468,6 +490,10 @@ void LACT_Reconstruction::EventRec(LACTEvent *event, LACTRecEvent *rec)
             double direction_error = Utilities::angle_between(event->GetAzimuth() * TMath::DegToRad(), event->GetAltitude() * TMath::DegToRad(), rec->GetRecAz() * TMath::DegToRad(), rec->GetRecAlt() * TMath::DegToRad());
             rec->SetDirectionError(direction_error * TMath::RadToDeg());
             FillTelRp(rec);
+            if(havelookup )
+            {
+                ComputeShape(rec);
+            }
         }
         else 
         {
@@ -475,6 +501,33 @@ void LACT_Reconstruction::EventRec(LACTEvent *event, LACTRecEvent *rec)
         }
     }
 
+}
+void LACT_Reconstruction::ComputeShape(LACTRecEvent * rec)
+{
+    int num = 0;
+    double sum_l = 0;
+    double sum_w = 0;
+    for( int i = 0; i < rec->GetNtel(); i++)
+    {
+        if( rec->good_image[i] >= 2)
+        {
+            double meanl = interpolate(mean_l, log10(rec->size[i]), rec->rec_rp[i]);
+            double sigmal = interpolate(sigma_l, log10(rec->size[i]), rec->rec_rp[i]);
+            double sigmaw = interpolate(sigma_w, log10(rec->size[i]), rec->rec_rp[i]);
+            double meanw = interpolate(mean_w, log10(rec->size[i]), rec->rec_rp[i]);
+
+            if( meanl > 0 && sigmal > 0 && sigmaw >0 && meanw > 0)
+            {
+                num++;
+                sum_l += (rec->GetTelLength(i) - meanl)/sigmal;
+                sum_w += (rec->GetTelWidth(i) - meanw)/sigmaw;
+            }
+        }
+    }
+    if (num > 0)
+    {
+        rec->SetShape(sum_l/num, sum_w/num);
+    }
 }
 
 void LACT_Reconstruction::FillTelRp(LACTRecEvent *rec)
@@ -490,6 +543,7 @@ void LACT_Reconstruction::FillTelRp(LACTRecEvent *rec)
         rec->SetTelRecRp(rec_rp);
     }
 }
+
 void LACT_Reconstruction::ComputePixNeighbor()
 {
     for( auto itel_config = tel_config.begin(); itel_config != tel_config.end(); ++itel_config)
@@ -510,6 +564,25 @@ bool LACT_Reconstruction::DirectionRec(LACTEvent *event, LACTRecEvent *rec)
     }
 }
 
+void LACT_Reconstruction::Weight(LACTEvent * event)
+{
+    if( event->GetMCenergy() < 1)
+    {
+        event->ReWeight(num_weight[0]);
+    }
+    else if (event->GetMCenergy() < 10) 
+    {
+        event->ReWeight(num_weight[1]);
+    }
+    else if (event->GetMCenergy() < 100)
+    {
+        event->ReWeight(num_weight[2]);
+    }
+    else if (event->GetMCenergy() > 100)
+    {
+        event->ReWeight(num_weight[3]);
+    }
+}
 /*void LACT_Reconstruction::InitLookupTableData()
 {
     TableData[MRSW] = new LACT_TableCalculatorData();
@@ -545,19 +618,55 @@ void LACT_Reconstruction::Draw_Events(LACTEvent* event, int ievent)
 {
     LACTRecEvent* rec = new LACTRecEvent();
     EventRec(event, rec);
+    if(rec->GetDirectionError() >0)
     for(int i = 0; i < rec->GetNtel(); i++)
     {
 
         int tel_id = rec->GetTelid(i);
-        if(rec->good_image[i] >= 1)
+        if(rec->good_image[i] >= 0)
         {
             int index = event->GetTelIndex(tel_id);
             display(rec, event->GetTelData(index), ievent, i);
         }
 
     }
+    else
+    {
+        for( int i = 0; i < event->GetTelnum(); i++)
+        {
+            display(event->GetTelData(i));
+        }
+    }
 }
 
+void LACT_Reconstruction::display(LACT_TelData* iteldata)
+{
+    int tel_id = iteldata->GetTelid();
+    TCanvas* camera_image =  new TCanvas(Form(" Camera %d", tel_id), Form("LACT IMAGE"), 1600, 1600);
+    TH2Poly* camera       =  new TH2Poly(Form(" Camera %d",  tel_id),"camera", -6, 6, -6, 6);
+    for( int i = 0; i < iteldata->GetImagePixnum(); i++)
+    {
+        int ipix = iteldata->GetImagePixId(i);
+        double binsize = tel_config[tel_id]->GetPixSize() / tel_config[tel_id]->GetFocalLength() * TMath::RadToDeg();
+        double x = tel_config[tel_id]->GetPixX(ipix) / tel_config[tel_id]->GetFocalLength() * TMath::RadToDeg();
+        double y = tel_config[tel_id]->GetPixY(ipix) / tel_config[tel_id]->GetFocalLength() * TMath::RadToDeg();
+        double bin_x[4] = {x - 0.5 * binsize, x + 0.5 * binsize, x + 0.5 * binsize, x - 0.5 * binsize};
+        double bin_y[4] = {y - 0.5 * binsize, y - 0.5 * binsize, y + 0.5 * binsize, y + 0.5 * binsize};
+        camera->AddBin(4, bin_x, bin_y);
+        camera->Fill(x, y, iteldata->GetPe(ipix));
+    }
+    camera->SetStats(0);
+    camera->Draw("colz");
+    TEllipse* el2 = new TEllipse(0, 0, 5.0, 5.0, 0, 360);
+    el2->SetLineWidth(2);
+    el2->SetLineColor(kBlack);
+    el2->SetFillStyle(0);
+    el2->Draw();
+    camera_image->SaveAs(Form("camera%d.png",  tel_id));
+    delete camera_image;
+    delete camera;
+
+}
 void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int ievent, int i)
 {
     int tel_id = iteldata->GetTelid();
@@ -620,4 +729,50 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
     camera_image->SaveAs(Form("Event%d_camera%d.png", ievent, tel_id));
     delete camera_image;
     delete camera;
+}
+
+double LACT_Reconstruction::interpolate(TH2D *h, double x, double y)
+{
+
+    if( !h )
+    {
+        return -999;
+    }
+
+    int i_x = h->GetXaxis()->FindFixBin( x );
+    int i_y = h->GetYaxis()->FindBin(y); 
+    if( i_x == 0 || i_y == 0 || i_x == h->GetNbinsX() || i_y == h->GetNbinsY())
+    {
+        return h->GetBinContent(i_x, i_y);
+    }
+    if( x < h->GetXaxis()->GetBinCenter(i_x))
+    {
+        i_x --;
+    }
+    if( y < h->GetYaxis()->GetBinCenter(i_y))
+    {
+        i_y --;
+    }
+    double e1 = 0.;
+    double e2 = 0.;
+    double v = 0.;
+    e1 = Statistics::interpolate( h->GetBinContent( i_x, i_y ), h->GetYaxis()->GetBinCenter( i_y ),
+                                       h->GetBinContent( i_x, i_y + 1 ), h->GetYaxis()->GetBinCenter( i_y + 1 ),
+                                       y, false, 0.5, 1.e-6 );
+    e2 = Statistics::interpolate( h->GetBinContent( i_x + 1, i_y ), h->GetYaxis()->GetBinCenter( i_y ),
+                                       h->GetBinContent( i_x + 1, i_y + 1 ), h->GetYaxis()->GetBinCenter( i_y + 1 ),
+                                       y, false, 0.5, 1.e-6 );
+    v = Statistics::interpolate( e1, h->GetXaxis()->GetBinCenter( i_x ),
+                                      e2, h->GetXaxis()->GetBinCenter( i_x + 1 ),
+                                      x, false, 0.5, 1.e-6 ); 
+    if( e1 > 1.e-5 && e2 < 1.e-5 )
+    {
+        return e1;
+    }
+    if( e1 < 1.e-5 && e2 > 1.e-5 )
+    {
+        return e2;
+    }
+    
+    return v;
 }

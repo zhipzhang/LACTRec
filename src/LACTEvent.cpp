@@ -53,12 +53,19 @@ bool LACTEvent::GetData()
             for( int j = 0; j < npix[itel]; j++)
             {
                 tel_data[i]->GetPe()[j] = rd2->PoissonD(8.91) - 8.91 + pe_list[i][j];
+                if(tel_data[i]->GetPe()[j] > 8000)
+                {
+                    tel_data[i]->GetPe()[j] = 8000;
+                }
             }
             tel_data[i]->SetPointDirection(tel_az[itel], tel_al[itel]);
 
         }
     }
-    
+    if( weight < 1e-7)
+    {
+        weight = pow(MCenergy,-1.7);
+    }
     return true;
 }
 

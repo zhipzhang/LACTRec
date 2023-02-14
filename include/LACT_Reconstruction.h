@@ -41,10 +41,16 @@ class LACT_Reconstruction
         bool havelookup;
         std::string lookup_file;
         TFile* LookupTableFile;
+        TH2D* mean_l;
+        TH2D* mean_w;
+        TH2D* sigma_l;
+        TH2D* sigma_w;
 
         bool DrawMode;
         std::vector<int> DrawEvents;
-
+        
+        bool ReWeight;
+        double num_weight[4]{0};
         //LACTTableCalculator* TableCalculator;
         //std::map<int, LACT_TableCalculatorData *>TableData;
 
@@ -55,6 +61,11 @@ class LACT_Reconstruction
         {
             havelookup = true;
             lookup_file = filename;
+            LookupTableFile = TFile::Open(lookup_file.c_str(),"read");
+            mean_l = (TH2D*)LookupTableFile->Get("ml");
+            mean_w = (TH2D*)LookupTableFile->Get("mw");
+            sigma_w = (TH2D*)LookupTableFile->Get("sw");
+            sigma_l = (TH2D*)LookupTableFile->Get("sl");
         }
         void SetOnlyTel(int i)
         {
@@ -77,6 +88,7 @@ class LACT_Reconstruction
         void SetEventPix(LACTEvent* );
         void Draw_Events(LACTEvent*, int);
         void display(LACTRecEvent*, LACT_TelData*,int ievent, int i);
+        void display(LACT_TelData*);
         void GetCommandConfig(LACT_RUNPARA* );
         void GetTelConfig(TTree* config_tree);
         void ComputePixNeighbor();
@@ -90,6 +102,9 @@ class LACT_Reconstruction
         void EventRec(LACTEvent* event, LACTRecEvent* rec);
         void FillLookupTable(LACTRecEvent* );
         void InitLookupTableData();
+        void Weight(LACTEvent*);
+        double interpolate( TH2D* h, double x, double y);
+        void ComputeShape(LACTRecEvent*);
 
 
 };
