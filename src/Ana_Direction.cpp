@@ -27,6 +27,7 @@ int main(int argc, char** argv)
     TH1F* h3[20];
     TH1F* h4[20];
     TH1F* h5[20];
+    TH1F* h6[20];
     for( int i = 0; i < 10; i++)
     {
 
@@ -43,6 +44,7 @@ int main(int argc, char** argv)
         h3[i] = new TH1F(Form("h300%d", i), Form("h3%d", i), 2000, 0, 2);
         h4[i] = new TH1F(Form("h400%d", i), Form("h4%d", i), 300, 0, 300);
         h5[i] = new TH1F(Form("h500%d", i), Form("h5%d", i), 2000, 0, 2);
+        h6[i] = new TH1F(Form("h600%d", i), Form("h6%d", i), 2000, 0, 2);
     }
     TFile* out_root = TFile::Open(lactrunpara->out_file.c_str(), "recreate");
     out_root->cd();
@@ -54,9 +56,13 @@ int main(int argc, char** argv)
     std::vector<TH1D*> nev2;
     TH1D* nev3;
     TH1D* nev4;
+    TH1D* nev5;
+    TH1D* nev6;
 
     nev3 = new TH1D("nev3", "nev3", 20, -1, 3);
     nev4 = new TH1D("nev4", "nev4", 20, -1, 3);
+    nev5 = new TH1D("nev5", "nev5", 20, -1, 3);
+    nev6 = new TH1D("nev6", "nev6", 20, -1, 3);
     std::vector<double> x[11];
     std::vector<double> x2[11];
     std::vector<double> y[11];
@@ -100,9 +106,15 @@ int main(int argc, char** argv)
                 h2[idist][ienergy]->Fill(core_error);
                 h3[ienergy]->Fill( lactrec->direction_error);
                 h4[ienergy]->Fill(core_error);
-                if( lactrec->mrsl > -1.1 && lactrec->mrsl <1.4 && lactrec->mrsw > -1.6 && lactrec->mrsw < 0.8 )
+                if( sqrt(pow(lactrec->GetMCCoreX(), 2) + pow(lactrec->GetMCCoreY(), 2)) < 800)
                 {
                     h5[ienergy]->Fill(lactrec->direction_error);
+                    nev5->Fill(log10(lactrec->MCenergy));
+                }
+                if( sqrt(pow(lactrec->GetMCCoreX(), 2) + pow(lactrec->GetMCCoreY(), 2)) < 900)
+                {
+                    h6[ienergy]->Fill(lactrec->direction_error);
+                    nev6->Fill(log10(lactrec->MCenergy));
                 }
             }
 
@@ -126,6 +138,7 @@ int main(int argc, char** argv)
         h3[j]->Write();
         h4[j]->Write();
         h5[j]->Write();
+        h6[j]->Write();
    }
    for( int i = 0; i < 10; i++)
    {
@@ -134,6 +147,8 @@ int main(int argc, char** argv)
    }
    nev3->Write();
    nev4->Write();
+   nev5->Write();
+   nev6->Write();
    out_root->Write();
    return 0;
 }
