@@ -11,6 +11,7 @@
 #include "LACT_RunPara.h"
 #include <vector>
 #include <map>
+#include "TH2.h"
 #include "TTree.h"
 #include "TFile.h"
 
@@ -45,6 +46,8 @@ class LACT_Reconstruction
         TH2D* mean_w;
         TH2D* sigma_l;
         TH2D* sigma_w;
+        TH2D* mean_ae;
+        TH2D* sigma_ae;
 
         bool DrawMode;
         std::vector<int> DrawEvents;
@@ -64,14 +67,16 @@ class LACT_Reconstruction
             LookupTableFile = TFile::Open(lookup_file.c_str(),"read");
             mean_l = (TH2D*)LookupTableFile->Get("ml");
             mean_w = (TH2D*)LookupTableFile->Get("mw");
+            mean_ae = (TH2D*)LookupTableFile->Get("mae");
             sigma_w = (TH2D*)LookupTableFile->Get("sw");
             sigma_l = (TH2D*)LookupTableFile->Get("sl");
+            sigma_ae = (TH2D*)LookupTableFile->Get("sae");
         }
         void SetOnlyTel(int i)
         {
             if( i > 0)
             {
-                known[i] = 1;
+                known[i- 1] = 1;
                 num_only++;
             }
 
@@ -88,7 +93,7 @@ class LACT_Reconstruction
         void SetEventPix(LACTEvent* );
         void Draw_Events(LACTEvent*, int);
         void display(LACTRecEvent*, LACT_TelData*,int ievent, int i);
-        void display(LACT_TelData*);
+        void display(LACT_TelData*, int);
         void GetCommandConfig(LACT_RUNPARA* );
         void GetTelConfig(TTree* config_tree);
         void ComputePixNeighbor();

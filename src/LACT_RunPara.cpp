@@ -51,13 +51,13 @@ void LACT_RUNPARA::ProcessCommandLine(int argc, char **argv)
                 {
                         SelectTel = true;
                         char word[20];
-                        int ipos;
+                        int ipos = 0;
                         while (getword(argv[2], &ipos, word, sizeof(word)-1, ',','\n') > 0 )
                         {  
                                 int tel_idx = atoi(word);
                                 if(tel_idx > 0)
                                 {
-                                        Only_Telescope.push_back(tel_idx -1);
+                                        Only_Telescope.push_back(tel_idx );
                                         printf("Only Telescope %d\n" , tel_idx);
                                 }
                         }
@@ -69,7 +69,7 @@ void LACT_RUNPARA::ProcessCommandLine(int argc, char **argv)
                 {
                         DrawMode = true;
                         char word[20];
-                        int ipos;
+                        int ipos = 0; 
                         while( getword(argv[2], &ipos, word, sizeof(word) - 1, ',', '\n') > 0)
                         {
                                 int event_idx = atoi(word);
@@ -96,6 +96,13 @@ void LACT_RUNPARA::ProcessCommandLine(int argc, char **argv)
                         argv += 2;
                         continue;
 
+                }
+                if(strcmp(argv[1], "--max-dist") == 0 )
+                {
+                        max_dist = atoi(argv[2]);
+                        argc -= 2;
+                        argv += 2;
+                        continue;
                 }
                 else 
                 {
