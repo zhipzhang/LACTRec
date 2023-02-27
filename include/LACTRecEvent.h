@@ -5,6 +5,7 @@
 #ifndef _LACT_RECEVENT_H
 #define _LACT_RECEVENT_H
 
+#include "LACT_Utilities.h"
 #include "TObject.h"
 #include <vector>
 #include <map>
@@ -51,6 +52,11 @@ class LACTRecEvent : public TObject
         std::vector< double> tel_al;              //!Considered Pointing Error
         std::vector< double> rp; 
         std::vector< double> rec_rp;
+        std::vector< double> hottest;
+        std::vector< double> miss;
+
+        std::vector< int> over_flow;
+        
 
         std::vector< int>  good_image;
         int ngood_images;
@@ -97,6 +103,18 @@ class LACTRecEvent : public TObject
         void SetTelRp(double r)
         {
             rp.push_back(r);
+        }
+        void SetHottest( double pe)
+        {
+            hottest.push_back(pe);
+        }
+        void SetOverFlow(int n)
+        {
+            over_flow.push_back(n);
+        }
+        void SetTelMiss(double l)
+        {
+            miss.push_back(l);
         }
         void SetTelRecRp(double rec_r)
         {
@@ -262,6 +280,11 @@ class LACTRecEvent : public TObject
         double GetTrueCameraY(int i)
         {
             return true_y[i];
+        }
+        void ComputeMiss()
+        {
+            double miss = Utilities::line_point_distance(image_x.back(), image_y.back(), 0, cos(alpha.back()), sin(alpha.back()), 0, true_x.back(), true_y.back(), 0);
+            SetTelMiss(miss);
         }
         void GetMCData(LACTEvent*) ;
 

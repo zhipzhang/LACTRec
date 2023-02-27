@@ -11,6 +11,8 @@ LACT_TelData::LACT_TelData(int n)
     pe = new float[npix];
     itel = -1;
     flag = true;
+    overflow = 0;
+    hottest = 0;
 }
 
 LACT_TelData::~LACT_TelData()

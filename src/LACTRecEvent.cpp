@@ -55,6 +55,10 @@ void LACTRecEvent::Reset()
     tel_al.clear();
     rp.clear();
     rec_rp.clear();
+    hottest.clear();
+    over_flow.clear();
+    good_image.clear();
+    miss.clear();
 }
 
 LACTRecEvent::~LACTRecEvent()
@@ -73,4 +77,8 @@ LACTRecEvent::~LACTRecEvent()
     tel_al.clear();
     rp.clear();
     rec_rp.clear();
+    over_flow.clear();
+    hottest.clear();
+    good_image.clear();
+    miss.clear();
 }

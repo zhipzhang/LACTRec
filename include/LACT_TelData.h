@@ -14,6 +14,7 @@ class LACT_TelData
         int npix;
         float* pe;
         float hottest;
+        int overflow;
         bool  flag;                          // flag whether used for image
 
     public:
@@ -26,6 +27,14 @@ class LACT_TelData
         int GetTelid()
         {
             return itel;
+        }
+        float GetHottest()
+        {
+            return hottest;
+        }
+        int GetOverFlow()
+        {
+            return overflow;
         }
         float* GetPe()
         {
@@ -63,6 +72,10 @@ class LACT_TelData
                 return image_pixel[i];
             else
                 return -1;
+        }
+        void AddOverFlow()
+        {
+            overflow++;
         }
         //Use Tail-Cuts to do the Image Cleaning
         bool ImageClean(double tail1, double tail2, std::map<int, std::vector< int> > &pixel_nerighbor);

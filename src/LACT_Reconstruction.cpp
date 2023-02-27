@@ -29,8 +29,8 @@ LACT_Reconstruction::LACT_Reconstruction()
     min_good_images = 2;
     min_size = 200;
     max_dist = 4.;
-    tail1 = 0;
-    tail2 = 0;
+    tail1 = 5;
+    tail2 = 10;
 
     havelookup = false;
     num_only = 0; 
@@ -73,6 +73,10 @@ void LACT_Reconstruction::GetCommandConfig(LACT_RUNPARA * LACT_Runpara)
             {
                 num_weight[i] = LACT_Runpara->num_weight[i];
             }
+        }
+        if(LACT_Runpara->max_dist >0)
+        {
+            max_dist = LACT_Runpara->max_dist;
         }
 }
 void LACT_Reconstruction::GetTelConfig(TTree *config_tree)
@@ -159,6 +163,8 @@ void LACT_Reconstruction::ComputeMoments(LACTEvent *event, LACTRecEvent *rec)
             rec->tel_id.push_back(tel_id);
             rec->SetTelAz((*itel)->GetTelAzimuth());
             rec->SetTelAl((*itel)->GetTelAltitude());
+            rec->SetHottest((*itel)->GetHottest());
+            rec->SetOverFlow((*itel)->GetOverFlow());
 
         }
         else 
@@ -256,6 +262,7 @@ void LACT_Reconstruction::ComputeMoments(LACTEvent *event, LACTRecEvent *rec)
             beta = beta * TMath::RadToDeg();
         }
         rec->SetAlpha(beta * TMath::DegToRad());
+        rec->ComputeMiss();
     }
 }
 
@@ -517,18 +524,26 @@ void LACT_Reconstruction::ComputeShape(LACTRecEvent * rec)
             double sigmal = interpolate(sigma_l, log10(rec->size[i]), rec->rec_rp[i]);
             double sigmaw = interpolate(sigma_w, log10(rec->size[i]), rec->rec_rp[i]);
             double meanw = interpolate(mean_w, log10(rec->size[i]), rec->rec_rp[i]);
+            /*
             double meanae = interpolate(mean_ae, log10(rec->size[i]), rec->rec_rp[i]);
             double sigmaae = interpolate(sigma_ae, log10(rec->size[i]), rec->rec_rp[i]);
+            */
 
-            double weight = 1/(0.01 + pow(sigmaae, 2));
-            double energy = rec->size[i]/meanae;
+            double meane = interpolate(mean_ae, log10(rec->size[i]), rec->rec_rp[i]);
+            double sigmae = interpolate(sigma_ae, log10(rec->size[i]), rec->rec_rp[i]);
+            double weight = meane/( pow(sigmae, 2));
+            //double energy = rec->size[i]/meanae;
             if( meanl > 0 && sigmal > 0 && sigmaw >0 && meanw > 0)
             {
                 num++;
                 sum_l += (rec->GetTelLength(i) - meanl)/sigmal;
                 sum_w += (rec->GetTelWidth(i) - meanw)/sigmaw;
+                if (rec->rec_rp[i] < 200)
+                {
+                    weight = weight * exp((200 - rec->rec_rp[i])/100);
+                }
                 all_w += weight;
-                sum_e += log(energy) * weight;
+                sum_e += meane * weight;
             }
         }
     }
@@ -538,7 +553,7 @@ void LACT_Reconstruction::ComputeShape(LACTRecEvent * rec)
     }
     if( all_w > 0)
     {
-        rec->rec_energy = exp(sum_e / all_w);
+        rec->rec_energy = (sum_e / all_w);
     }
 }
 
@@ -655,8 +670,8 @@ void LACT_Reconstruction::Draw_Events(LACTEvent* event, int ievent)
 void LACT_Reconstruction::display(LACT_TelData* iteldata, int ievent)
 {
     int tel_id = iteldata->GetTelid();
-    TCanvas* camera_image =  new TCanvas(Form(" Camera %d", tel_id), Form("LACT IMAGE"), 1600, 1600);
-    TH2Poly* camera       =  new TH2Poly(Form(" Camera %d",  tel_id),"camera", -6, 6, -6, 6);
+    TCanvas* camera_image =  new TCanvas(Form(" Camera %d", tel_id), Form("LACT IMAGE"), 1800, 1800);
+    TH2Poly* camera       =  new TH2Poly(Form(" Camera %d",  tel_id),"camera", -11, 11, -11, 11);
     for( int i = 0; i < iteldata->GetImagePixnum(); i++)
     {
         int ipix = iteldata->GetImagePixId(i);
@@ -670,7 +685,7 @@ void LACT_Reconstruction::display(LACT_TelData* iteldata, int ievent)
     }
     camera->SetStats(0);
     camera->Draw("colz");
-    TEllipse* el2 = new TEllipse(0, 0, 5.0, 5.0, 0, 360);
+    TEllipse* el2 = new TEllipse(0, 0, 10.0, 10.0, 0, 360);
     el2->SetLineWidth(2);
     el2->SetLineColor(kBlack);
     el2->SetFillStyle(0);
@@ -683,8 +698,8 @@ void LACT_Reconstruction::display(LACT_TelData* iteldata, int ievent)
 void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int ievent, int i)
 {
     int tel_id = iteldata->GetTelid();
-    TCanvas* camera_image =  new TCanvas(Form("Event %d of Camera %d", ievent, tel_id), Form("LACT IMAGE"), 1600, 1600);
-    TH2Poly* camera       =  new TH2Poly(Form("Event %d Camera %d", ievent, tel_id),"", -6, 6, -6, 6);
+    TCanvas* camera_image =  new TCanvas(Form("Event %d of Camera %d", ievent, tel_id), Form("LACT IMAGE"), 1800, 1800);
+    TH2Poly* camera       =  new TH2Poly(Form("Event %d Camera %d", ievent, tel_id),"", -11, 11, -11, 11);
     for( int i = 0; i < iteldata->GetImagePixnum(); i++)
     {
         int ipix = iteldata->GetImagePixId(i);
@@ -697,7 +712,7 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
         camera->Fill(x, y, iteldata->GetPe(ipix));
     }
     camera->SetStats(0);
-    camera->Draw("");
+    camera->Draw("colz");
 
     TGraph* g1 = new TGraph();
     g1->SetPoint(g1->GetN(), rec->GetTrueCameraY(i) , rec->GetTrueCameraY(i));
@@ -723,12 +738,12 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
     ellipse->SetFillStyle(0);
     ellipse->Draw();
 
-    TEllipse* el2 = new TEllipse(0, 0, 5.0, 5.0, 0, 360);
+    TEllipse* el2 = new TEllipse(0, 0, 10.0, 10.0, 0, 360);
     el2->SetLineWidth(2);
     el2->SetLineColor(kBlack);
     el2->SetFillStyle(0);
     el2->Draw();
-    TEllipse* el3 = new TEllipse(0, 0, 3.2, 3.2, 0, 360);
+    TEllipse* el3 = new TEllipse(0, 0, 5.0, 5.0, 0, 360);
     el3->SetLineWidth(2);
     el3->SetLineColor(kBlack);
     el3->SetFillStyle(0);

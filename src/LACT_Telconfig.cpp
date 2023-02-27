@@ -17,7 +17,7 @@ void LACT_TelConfig::ComputeNeighbor()
                 x_j = x_pix[j];
                 y_j = y_pix[j];
             }
-            if( sqrt( pow(x_i - x_j, 2) + pow(y_i - y_j, 2)) < 1.5 * pixel_size)
+            if( sqrt( pow(x_i - x_j, 2) + pow(y_i - y_j, 2)) < 1.7 * pixel_size)
             {
                 if( pixel_neighbors[i].size() < MAX_NEIGHBOR)
                     pixel_neighbors[i].push_back(j);

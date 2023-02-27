@@ -161,5 +161,6 @@ LACT_RUNPARA::LACT_RUNPARA()
         havelookup = writelookup = DrawMode = SelectTel= ResetWeight = false;
         lookup_file = "";
         out_file = "dst.root";
+        max_dist = 0 ;
 
 }

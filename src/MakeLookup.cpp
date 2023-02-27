@@ -32,7 +32,7 @@ int main(int argc, char** argv)
         {
             h1[i][j] = new TH1F(Form("h%d", i * 100 + j), Form("h%d", i * 100 +j), 5000, 0, 0.05);
             h2[i][j] = new TH1F(Form("hc%d", i * 100 + j), Form("h%d", i * 100 +j), 5000, 0, 0.05);
-            h3[i][j] = new TH1F(Form("hd%d", i * 100 + j), Form("h%d", i * 100 +j), 50000, 0, 50000);
+            h3[i][j] = new TH1F(Form("hd%d", i * 100 + j), Form("h%d", i * 100 +j), 50000, 0.1, 1000);
 
         }
     }
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
                         {
                             h1[is][ir]->Fill(lactrec->length[i], lactrec->weight);
                             h2[is][ir]->Fill(lactrec->width[i], lactrec->weight);
-                            h3[is][ir]->Fill(lactrec->size[i]/lactrec->MCenergy, lactrec->weight);
+                            h3[is][ir]->Fill(log10(lactrec->MCenergy), lactrec->weight);
                         }
                     }
                 }
@@ -98,11 +98,13 @@ int main(int argc, char** argv)
                 double ib[] ={0.16, 0.5, 0.84};
                 h1[i][j]->GetQuantiles(3, ia, ib);
                 h2[i][j]->GetQuantiles(3, ic, ib);
-                h3[i][j]->GetQuantiles(3, id, ib);
+                //h3[i][j]->GetQuantiles(3, id, ib);
+                double meane = h3[i][j]->GetMean();
+                double sigma = h3[i][j]->GetStdDev();
                 mean_l->SetBinContent(i+1, j+1, ia[1]);
                 mean_w->SetBinContent(i+1, j+1, ic[1]);
-                mean_ae->SetBinContent(i+1, j+1, id[1]);
-                sigma_ae->SetBinContent(i+1, j+1, 0.5*(id[2] - id[0]));
+                mean_ae->SetBinContent(i+1, j+1, meane);
+                sigma_ae->SetBinContent(i+1, j+1, sigma);
                 sigma_l->SetBinContent(i+1, j+1, 0.5*(ia[2] - ia[0]));
                 sigma_w->SetBinContent(i+1, j+1, 0.5*(ic[2] - ic[0]));
             }
