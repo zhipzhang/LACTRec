@@ -262,7 +262,6 @@ void LACT_Reconstruction::ComputeMoments(LACTEvent *event, LACTRecEvent *rec)
             beta = beta * TMath::RadToDeg();
         }
         rec->SetAlpha(beta * TMath::DegToRad());
-        rec->ComputeMiss();
     }
 }
 
@@ -273,6 +272,7 @@ void LACT_Reconstruction::ConvertToRad(LACTRecEvent *rec)
     {
         int tel_id = rec->GetTelid(i);
         rec->ConvertRad(i, tel_config[tel_id]->GetFocalLength());
+        rec->ComputeMiss(i);
     }
 
 }

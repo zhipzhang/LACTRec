@@ -281,9 +281,9 @@ class LACTRecEvent : public TObject
         {
             return true_y[i];
         }
-        void ComputeMiss()
+        void ComputeMiss(int itel)
         {
-            double miss = Utilities::line_point_distance(image_x.back(), image_y.back(), 0, cos(alpha.back()), sin(alpha.back()), 0, true_x.back(), true_y.back(), 0);
+            double miss = Utilities::line_point_distance(image_x[itel], image_y[itel], 0, cos(alpha[itel]), sin(alpha[itel]), 0, true_x[itel], true_y[itel], 0);
             SetTelMiss(miss);
         }
         void GetMCData(LACTEvent*) ;
