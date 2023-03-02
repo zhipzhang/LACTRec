@@ -13,7 +13,7 @@ void LACTEvent::Init( TTree* event_tree)
     event_tree->SetBranchAddress("runNumber", &Runnumber);
     event_tree->SetBranchAddress("eventNumber", &Eventnumber);
 
-    event_tree->SetBranchAddress("ntel ", &ntel);
+    event_tree->SetBranchAddress("ntel", &ntel);
     event_tree->SetBranchAddress("MCe0", &MCenergy);
     event_tree->SetBranchAddress("MCxcore", &MCxcore);
     event_tree->SetBranchAddress("MCycore", &MCycore);
@@ -31,13 +31,13 @@ void LACTEvent::Init( TTree* event_tree)
     event_tree->SetBranchAddress("Pe", pe_list);
     event_tree->SetBranchAddress("Paz", tel_az);
     event_tree->SetBranchAddress("Pal", tel_al);
-    event_tree->SetBranchAddress("ltrig_list", &Trig_list);
+    event_tree->SetBranchAddress("ltrig_list", Trig_list);
 
 }
 
 bool LACTEvent::GetData()
 {
-    MCal = 90 -MCze;
+    MCal = 90 - MCze;
     if( flag == 0)
     {
         return false;
@@ -52,7 +52,7 @@ bool LACTEvent::GetData()
             map_telid_index[itel] = i;
             for( int j = 0; j < npix[itel]; j++)
             {
-                tel_data[i]->GetPe()[j] = pe_list[i][j] + rd2->PoissonD(8.91) - 8.91;
+                tel_data[i]->GetPe()[j] = pe_list[i][j] + rd2->Poisson(8.91) - 8.91 ;
                 if(tel_data[i]->GetPe()[j] > 8000)
                 {
                     tel_data[i]->AddOverFlow();

@@ -78,6 +78,11 @@ void LACT_Reconstruction::GetCommandConfig(LACT_RUNPARA * LACT_Runpara)
         {
             max_dist = LACT_Runpara->max_dist;
         }
+        if( LACT_Runpara->ReClean)
+        {
+            tail1 = LACT_Runpara->tailcut[0];
+            tail2 = LACT_Runpara->tailcut[1];
+        }
 }
 void LACT_Reconstruction::GetTelConfig(TTree *config_tree)
 {
@@ -165,7 +170,6 @@ void LACT_Reconstruction::ComputeMoments(LACTEvent *event, LACTRecEvent *rec)
             rec->SetTelAl((*itel)->GetTelAltitude());
             rec->SetHottest((*itel)->GetHottest());
             rec->SetOverFlow((*itel)->GetOverFlow());
-
         }
         else 
         {
@@ -173,7 +177,7 @@ void LACT_Reconstruction::ComputeMoments(LACTEvent *event, LACTRecEvent *rec)
         }
         double dx, dy;
         Utilities::angles_to_offset(event->GetAzimuth() * TMath::DegToRad(), event->GetAltitude() * TMath::DegToRad(), (*itel)->GetTelAzimuth() * TMath::DegToRad()
-                , (*itel)->GetTelAzimuth() * TMath::DegToRad(), tel_config[tel_id]->GetFocalLength(),  &dx, &dy);
+                , (*itel)->GetTelAltitude() * TMath::DegToRad(), tel_config[tel_id]->GetFocalLength(),  &dx, &dy);
         
         rec->SetTrueSource(dx, dy);
 
@@ -671,7 +675,7 @@ void LACT_Reconstruction::display(LACT_TelData* iteldata, int ievent)
 {
     int tel_id = iteldata->GetTelid();
     TCanvas* camera_image =  new TCanvas(Form(" Camera %d", tel_id), Form("LACT IMAGE"), 1800, 1800);
-    TH2Poly* camera       =  new TH2Poly(Form(" Camera %d",  tel_id),"camera", -11, 11, -11, 11);
+    TH2Poly* camera       =  new TH2Poly(Form(" Camera %d",  tel_id),"camera", -6, 6, -6, 6);
     for( int i = 0; i < iteldata->GetImagePixnum(); i++)
     {
         int ipix = iteldata->GetImagePixId(i);
@@ -699,7 +703,7 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
 {
     int tel_id = iteldata->GetTelid();
     TCanvas* camera_image =  new TCanvas(Form("Event %d of Camera %d", ievent, tel_id), Form("LACT IMAGE"), 1800, 1800);
-    TH2Poly* camera       =  new TH2Poly(Form("Event %d Camera %d", ievent, tel_id),"", -11, 11, -11, 11);
+    TH2Poly* camera       =  new TH2Poly(Form("Event %d Camera %d", ievent, tel_id),"", -6, 6, -6, 6);
     for( int i = 0; i < iteldata->GetImagePixnum(); i++)
     {
         int ipix = iteldata->GetImagePixId(i);

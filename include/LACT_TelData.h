@@ -15,7 +15,7 @@ class LACT_TelData
         float* pe;
         float hottest;
         int overflow;
-        bool  flag;                          // flag whether used for image
+        bool  flag;                          // flag whether used for image (pixel > 4)
 
     public:
         LACT_TelData(int n);

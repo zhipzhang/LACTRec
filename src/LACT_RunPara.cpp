@@ -104,6 +104,18 @@ void LACT_RUNPARA::ProcessCommandLine(int argc, char **argv)
                         argv += 2;
                         continue;
                 }
+                if(strcmp(argv[1], "--tail-cut") == 0 )
+                {
+                        size_t n = sscanf(argv[2], "%lf,%lf", &tailcut[0], &tailcut[1]);
+                        if( n < 2)
+                        {
+                                fprintf(stderr, "Syntax Error ! you have to specify all two tail-cuts ");
+                                exit(EXIT_FAILURE);
+                        }
+                        ReClean = true;
+                        argc -= 2;
+                        argv += 2;
+                }
                 else 
                 {
                         break;
@@ -159,6 +171,7 @@ bool LACT_RUNPARA::ProcessCommandLine(int argc, char** argv, bool lookup_flag)
 LACT_RUNPARA::LACT_RUNPARA()
 {
         havelookup = writelookup = DrawMode = SelectTel= ResetWeight = false;
+        ReClean = false;
         lookup_file = "";
         out_file = "dst.root";
         max_dist = 0 ;

@@ -20,6 +20,9 @@ class LACT_RUNPARA
         double num_weight[4];
         double max_dist;
         double min_tel;
+
+        double tailcut[2];
+        bool  ReClean;
         std::vector<int> Only_Telescope;
         std::vector<int> Draw_Events;
         std::vector<std::string> input_file;
