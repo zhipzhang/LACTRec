@@ -36,8 +36,8 @@ int main( int argc, char** argv)
             {
                 for( int i = 0 ; i < lactrec->GetNtel(); i++)
                 {
-                    miss->Fill(log10(lactrec->GetTelSize(i)), lactrec->miss[i] * TMath::RadToDeg(), lactrec->weight);
-                    miss2->Fill(log10(lactrec->MCenergy), lactrec->miss[i] * TMath::RadToDeg(), lactrec->weight);
+                    miss->Fill(log10(lactrec->GetTelSize(i)),lactrec->rp[i],lactrec->miss[i] * TMath::RadToDeg(), lactrec->weight);
+                    miss2->Fill(log10(lactrec->MCenergy),lactrec->rp[i], lactrec->miss[i] * TMath::RadToDeg(), lactrec->weight);
                 }
             }
         }
