@@ -52,7 +52,7 @@ bool LACTEvent::GetData()
             map_telid_index[itel] = i;
             for( int j = 0; j < npix[itel]; j++)
             {
-                tel_data[i]->GetPe()[j] = pe_list[i][j] + rd2->Poisson(8.91) - 8.91 ;
+                tel_data[i]->GetPe()[j] = pe_list[i][j] + rd2->PoissonD(8.91) - 8.91;
                 if(tel_data[i]->GetPe()[j] > 8000)
                 {
                     tel_data[i]->AddOverFlow();
