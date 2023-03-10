@@ -724,7 +724,7 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
     g1->SetMarkerSize(4);
     g1->SetMarkerColor(2);
     TGraph* g2 = new TGraph();
-    g2->SetPoint(g1->GetN(), rec->rec_camerax, rec->rec_cameray);
+    g2->SetPoint(g1->GetN(), rec->rec_camerax * TMath::RadtoDeg(), rec->rec_cameray * TMath::RadtoDeg());
     g2->SetMarkerStyle(5);
     g2->SetMarkerColor(2);
     g2->SetMarkerSize(4);
