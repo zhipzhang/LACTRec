@@ -5,6 +5,7 @@
 #include "TH2D.h"
 #include "TH1D.h"
 #include "TGraph.h"
+#include <cstdio>
 #include <cstdlib>
 #include <vector>
 #include <string>
@@ -44,6 +45,19 @@ int main(int argc, char** argv)
     TH2D* sigma_l = new TH2D("sl", "sigma_l", 50, 2, 7, 50, 0, 750);
     TH2D* mean_w  = new TH2D("mw", "mean_w",50, 2, 7, 50, 0, 750);
     TH2D* sigma_w  = new TH2D("sw", "sgima_w",50, 2, 7, 50, 0, 750);
+    char name[200];
+    for( int i = 0; i < 50; i++)
+    {
+        for( int j = 0; j < 50; j++)
+        {
+            sprintf(name, "Length Distribution For Size%.2f - %.2f RecRp%.1fm - %.1fm ", pow(10, mean_l->GetXaxis()->GetBinLowEdge(i + 1)), pow(10, mean_l->GetXaxis()->GetBinUpEdge(i + 1)), mean_l->GetYaxis()->GetBinLowEdge(i + 1), mean_l->GetYaxis()->GetBinUpEdge(i +1));
+            h1[i][j]->SetTitle(name);
+            sprintf(name, "Width Distribution For Size%.2f - %.2f RecRp%.1fm - %.1fm ", pow(10, mean_l->GetXaxis()->GetBinLowEdge(i + 1)), pow(10, mean_l->GetXaxis()->GetBinUpEdge(i + 1)), mean_l->GetYaxis()->GetBinLowEdge(i + 1), mean_l->GetYaxis()->GetBinUpEdge(i +1));
+            h2[i][j]->SetTitle(name);
+            sprintf(name, "log10(energy) Distribution For Size%.2f - %.2f Rp%.1fm - %.1fm ", pow(10, mean_l->GetXaxis()->GetBinLowEdge(i + 1)), pow(10, mean_l->GetXaxis()->GetBinUpEdge(i + 1)), mean_l->GetYaxis()->GetBinLowEdge(i + 1), mean_l->GetYaxis()->GetBinUpEdge(i +1));
+            h3[i][j]->SetTitle(name);
+        }
+    }
     for( auto input :lactrunpara->input_file)
     {
         TFile* input_root = TFile::Open(input.c_str(), "read");
@@ -65,7 +79,8 @@ int main(int argc, char** argv)
                     {
                         int ir = mean_l->GetYaxis()->FindBin(lactrec->rec_rp[i]) - 1;
                         int is = mean_l->GetXaxis()->FindBin(log10(lactrec->size[i])) - 1;
-                        if ( ir >= 50 || is >=50 || ir < 0 || is <0)
+                        int ire = mean_l->GetYaxis()->FindBin(lactrec->rp[i]) - 1;
+                        if ( ir >= 50 || is >=50 || ir < 0 || is <0 )
                         {
                             continue;
                         }
@@ -73,7 +88,14 @@ int main(int argc, char** argv)
                         {
                             h1[is][ir]->Fill(lactrec->length[i], lactrec->weight);
                             h2[is][ir]->Fill(lactrec->width[i], lactrec->weight);
-                            h3[is][ir]->Fill(log10(lactrec->MCenergy), lactrec->weight);
+                        }
+                        if( ire >=50 || ire < 0)
+                        {
+                            continue;
+                        }
+                        else 
+                        {
+                            h3[is][ire]->Fill((lactrec->MCenergy), lactrec->weight);
                         }
                     }
                 }
@@ -99,14 +121,17 @@ int main(int argc, char** argv)
                 h1[i][j]->GetQuantiles(3, ia, ib);
                 h2[i][j]->GetQuantiles(3, ic, ib);
                 //h3[i][j]->GetQuantiles(3, id, ib);
-                double meane = h3[i][j]->GetMean();
-                double sigma = h3[i][j]->GetStdDev();
                 mean_l->SetBinContent(i+1, j+1, ia[1]);
                 mean_w->SetBinContent(i+1, j+1, ic[1]);
-                mean_ae->SetBinContent(i+1, j+1, meane);
-                sigma_ae->SetBinContent(i+1, j+1, sigma);
                 sigma_l->SetBinContent(i+1, j+1, 0.5*(ia[2] - ia[0]));
                 sigma_w->SetBinContent(i+1, j+1, 0.5*(ic[2] - ic[0]));
+            }
+            if( h3[i][j]->GetEntries() > 20)
+            {
+                double meane = h3[i][j]->GetMean();
+                double sigma = h3[i][j]->GetStdDev();
+                mean_ae->SetBinContent(i+1, j+1, meane);
+                sigma_ae->SetBinContent(i+1, j+1, sigma);
             }
         }
     }
@@ -115,9 +140,12 @@ int main(int argc, char** argv)
    {
         for( int j = 0; j < 50; j++)
         {
-            h1[i][j]->Write();
-            h2[i][j]->Write();
-            h3[i][j]->Write();
+            if( h1[i][j] ->GetEntries() > 20)
+            {
+                h1[i][j]->Write();
+                h2[i][j]->Write();
+                h3[i][j]->Write();
+            }
         }
    }
    mean_l->Write();

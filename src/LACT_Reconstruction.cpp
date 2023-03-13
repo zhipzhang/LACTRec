@@ -536,7 +536,7 @@ void LACT_Reconstruction::ComputeShape(LACTRecEvent * rec)
             double meane = interpolate(mean_ae, log10(rec->size[i]), rec->rec_rp[i]);
             double sigmae = interpolate(sigma_ae, log10(rec->size[i]), rec->rec_rp[i]);
             double weight = meane/( pow(sigmae, 2));
-            //double energy = rec->size[i]/meanae;
+            //double energy = pow(10,meane);
             if( meanl > 0 && sigmal > 0 && sigmaw >0 && meanw > 0)
             {
                 num++;
@@ -557,7 +557,7 @@ void LACT_Reconstruction::ComputeShape(LACTRecEvent * rec)
     }
     if( all_w > 0)
     {
-        rec->rec_energy = (sum_e / all_w);
+        rec->rec_energy = sum_e/all_w;
     }
 }
 
@@ -719,12 +719,12 @@ void LACT_Reconstruction::display(LACTRecEvent *rec, LACT_TelData* iteldata, int
     camera->Draw("colz");
 
     TGraph* g1 = new TGraph();
-    g1->SetPoint(g1->GetN(), rec->GetTrueCameraY(i) , rec->GetTrueCameraY(i));
+    g1->SetPoint(g1->GetN(), rec->GetTrueCameraY(i) * TMath::RadToDeg() , rec->GetTrueCameraY(i) * TMath::RadToDeg());
     g1->SetMarkerStyle(4);
     g1->SetMarkerSize(4);
     g1->SetMarkerColor(2);
     TGraph* g2 = new TGraph();
-    g2->SetPoint(g1->GetN(), rec->rec_camerax * TMath::RadtoDeg(), rec->rec_cameray * TMath::RadtoDeg());
+    g2->SetPoint(g2->GetN(), rec->rec_camerax * TMath::RadToDeg(), rec->rec_cameray * TMath::RadToDeg());
     g2->SetMarkerStyle(5);
     g2->SetMarkerColor(2);
     g2->SetMarkerSize(4);
